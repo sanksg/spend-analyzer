@@ -1,0 +1,27 @@
+# FastAPI & Server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database
+sqlalchemy>=2.0.38
+alembic
+
+# PDF Processing
+pdfplumber
+PyMuPDF
+Pillow
+
+# Google Gemini
+google-genai
+
+# Utilities
+pydantic
+pydantic-settings
+python-dotenv
+aiofiles
+
+# Testing
+pytest
+pytest-asyncio
+httpx
