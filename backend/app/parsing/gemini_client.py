@@ -38,7 +38,7 @@ IMPORTANT RULES:
 
 RESPOND WITH VALID JSON ONLY. No markdown, no explanation, just the JSON object."""
 
-USER_PROMPT_TEMPLATE = """Parse the following credit card statement and extract all transactions.
+USER_PROMPT_TEMPLATE = """Parse the following credit card statement and extract all transactions, PLUS the statement summary details.
 
 Statement filename: {filename}
 Number of pages: {page_count}
@@ -55,6 +55,9 @@ Return a JSON object with this exact structure:
     "source_name": "Bank/Card issuer name or null",
     "period_start": "YYYY-MM-DD or null",
     "period_end": "YYYY-MM-DD or null",
+    "closing_balance": 1234.56 or null,
+    "minimum_payment_due": 100.00 or null,
+    "payment_due_date": "YYYY-MM-DD or null",
     "account_number_last4": "last 4 digits or null",
     "transactions": [
         {{

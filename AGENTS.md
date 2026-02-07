@@ -4,7 +4,7 @@
 A local-first web app to upload credit card statement PDFs, parse transactions using Google Gemini Flash, categorize spending, and visualize reports.
 
 ## Tech Stack
-- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, SQLite, pdfplumber
+- **Backend**: Python 3.11+ (uv for packag management), FastAPI, SQLAlchemy, SQLite, pdfplumber
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Chart.js
 - **PDF Parsing**: pdfplumber (text extraction) + Google Gemini Flash API (AI parsing)
 - **Taxonomy**: Plaid Transaction Categories (CSV)
@@ -99,15 +99,15 @@ casparser/
 ```bash
 cd backend
 venv\Scripts\activate
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 cp .env.example .env  # Add your GEMINI_API_KEY
 uvicorn app.main:app --reload --port 8000
 ```
 ## Python Virtual Environment
 **IMPORTANT** Before running any python code, you need to go into the backend folder and activate the venv environment in .venv folder. Use followin commands:
-> `cd backend`
-> `.venv\Scripts\activate` for windows
-> `source .venv/Scripts/activate` for linux
+- cd backend
+- .venv\Scripts\activate # for windows
+- source .venv/Scripts/activate # for linux
 after that you should be able to run any python code in this environment
 
 ### Frontend
@@ -129,10 +129,14 @@ npm run dev
 
 ## Python Virtual Environment
 **IMPORTANT** Before running any python code, you need to go into the backend folder and activate the venv environment in .venv folder. Use followin commands:
-> `cd backend`
-> `.venv\Scripts\activate` for windows
-> `source .venv/Scripts/activate` for linux
-after that you should be able to run any python code in this environment
+> cd backend
+> .venv\Scripts\activate # for windows
+> source .venv/Scripts/activate # for linux
+
+For installing new python packages, first activate the environment as above. Then:
+> uv pip install <package_name>
+
+Remember, we use uv for all package management
 
 **IMPORTANT**: For frontend work and for accessing npm or node, you need to be in the frontend folder.
 

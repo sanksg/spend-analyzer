@@ -6,6 +6,8 @@ import {
     Tags,
     FileText,
     Wallet,
+    Lightbulb,
+    Settings,
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import UploadPage from './pages/Upload';
@@ -13,6 +15,9 @@ import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
 import Statements from './pages/Statements';
 import StatementDetail from './pages/StatementDetail';
+import Insights from './pages/Insights';
+import Analysis from './pages/Analysis';
+import SettingsPage from './pages/Settings';
 import clsx from 'clsx';
 import { Toaster } from 'react-hot-toast';
 import { ProcessingProvider } from './contexts/ProcessingContext';
@@ -50,6 +55,18 @@ function App() {
                             <NavItem to="/categories" icon={<Tags className="w-5 h-5" />}>
                                 Categories
                             </NavItem>
+                            <div className="pt-4 pb-1 pl-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Analysis
+                            </div>
+                            <NavItem to="/insights" icon={<Lightbulb className="w-5 h-5" />}>
+                                Insights
+                            </NavItem>
+                            <NavItem to="/analysis" icon={<FileText className="w-5 h-5" />}>
+                                Ask Your Data
+                            </NavItem>
+                            <NavItem to="/settings" icon={<Settings className="w-5 h-5" />}>
+                                Settings
+                            </NavItem>
                         </nav>
 
                         <div className="p-4 border-t border-border">
@@ -68,6 +85,9 @@ function App() {
                             <Route path="/statements/:id" element={<StatementDetail />} />
                             <Route path="/transactions" element={<Transactions />} />
                             <Route path="/categories" element={<Categories />} />
+                            <Route path="/insights" element={<Insights />} />
+                            <Route path="/analysis" element={<Analysis />} />
+                            <Route path="/settings" element={<SettingsPage />} />
                         </Routes>
                     </main>
                 </div>

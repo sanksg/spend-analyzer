@@ -18,9 +18,12 @@ class Settings(BaseSettings):
     artifacts_dir: Path = Path("data/artifacts")
 
     # Parsing
-    gemini_model: str = "gemini-1.5-flash"
+    gemini_model: str = "gemini-2.5-flash"
     max_pdf_pages: int = 50
     parse_timeout_seconds: int = 120
+
+    # Analysis
+    analysis_model: str = "gemini/gemini-2.5-flash-lite"
 
     # Plaid taxonomy
     plaid_taxonomy_path: Path = Path("transactions-personal-finance-category-taxonomy.csv")

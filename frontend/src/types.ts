@@ -12,6 +12,12 @@ export interface Statement {
     page_count: number | null;
     period_start: string | null;
     period_end: string | null;
+
+    // New Phase 2 Fields
+    closing_balance: number | null;
+    minimum_payment: number | null;
+    payment_due_date: string | null;
+
     uploaded_at: string;
     transaction_count: number;
     needs_review_count: number;
@@ -179,4 +185,27 @@ export interface MerchantFrequency {
 
 export interface MerchantFrequencyResponse {
     merchants: MerchantFrequency[];
+}
+
+
+// --- New Phase 2 Types ---
+
+export interface AppSetting {
+    key: string;
+    value: string;
+    value_type: 'string' | 'int' | 'float' | 'bool';
+}
+
+export interface Subscription {
+    id: number;
+    merchant: string;
+    amount: number;
+    cadence: string;
+    last_seen: string;
+}
+
+export interface AnalysisResponse {
+    answer: string;
+    generated_sql: string;
+    raw_data: Record<string, any>[];
 }

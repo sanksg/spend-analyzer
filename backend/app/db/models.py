@@ -63,6 +63,11 @@ class Statement(Base):
     source_name = Column(String(100))  # e.g., "Chase", "Amex"
     period_start = Column(Date)
     period_end = Column(Date)
+    
+    # Financials (New in Phase 2)
+    closing_balance = Column(Numeric(10, 2), nullable=True)
+    minimum_payment = Column(Numeric(10, 2), nullable=True)
+    payment_due_date = Column(Date, nullable=True)
 
     # Processing info
     page_count = Column(Integer)
@@ -107,6 +112,16 @@ class ParseJob(Base):
 
     def __repr__(self):
         return f"<ParseJob {self.id}: {self.status.value}>"
+
+
+class AppSettings(Base):
+    """User preferences (Singleton/Key-Value storage)."""
+
+    __tablename__ = "settings"
+
+    key = Column(String(50), primary_key=True, index=True)
+    value = Column(String(255), nullable=True)
+    value_type = Column(String(20), default="string")  # string, int, float, bool
 
 
 class Category(Base):

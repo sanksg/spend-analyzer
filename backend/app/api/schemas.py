@@ -27,6 +27,11 @@ class StatementResponse(StatementBase):
     page_count: Optional[int] = None
     period_start: Optional[date] = None
     period_end: Optional[date] = None
+    
+    closing_balance: Optional[Decimal] = None
+    minimum_payment: Optional[Decimal] = None
+    payment_due_date: Optional[date] = None
+    
     uploaded_at: datetime
     transaction_count: int = 0
     needs_review_count: int = 0
@@ -98,6 +103,41 @@ class TransactionResponse(TransactionBase):
     category_color: Optional[str] = None
     category_primary: Optional[str] = None
     category_detailed: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# --- Settings Schemas ---
+
+
+class AppSettingCreate(BaseModel):
+    key: str
+    value: str
+    value_type: str = "string"
+
+
+class AppSettingResponse(AppSettingCreate):
+    pass
+    
+    class Config:
+        from_attributes = True
+
+
+# --- Subscription Schemas ---
+
+
+class SubscriptionResponse(BaseModel):
+    id: int
+    merchant: str
+    amount: Decimal
+    cadence: Optional[str] = None
+    last_seen: Optional[date] = None
+    kind: Optional[str] = "subscription"
+    # detected_at: datetime # Not in original model, use created_at
+    
+    class Config:
+        from_attributes = True
     raw_text: Optional[str] = None
     page_number: Optional[int] = None
     recurring_signature: Optional[str] = None

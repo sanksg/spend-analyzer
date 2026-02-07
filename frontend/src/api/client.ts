@@ -18,7 +18,7 @@ import type {
 
 const API_BASE = '/api';
 
-async function fetchApi<T>(
+export async function fetchApi<T>(
     endpoint: string,
     options?: RequestInit
 ): Promise<T> {

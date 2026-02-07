@@ -29,6 +29,12 @@ class ParsedStatement(BaseModel):
     source_name: Optional[str] = Field(default=None, description="Bank/card issuer name")
     period_start: Optional[date] = Field(default=None, description="Statement period start")
     period_end: Optional[date] = Field(default=None, description="Statement period end")
+
+    # New Phase 2 Fields
+    closing_balance: Optional[Decimal] = Field(default=None, description="Closing balance of the statement")
+    minimum_payment_due: Optional[Decimal] = Field(default=None, description="Minimum payment due")
+    payment_due_date: Optional[date] = Field(default=None, description="Payment due date")
+
     account_number_last4: Optional[str] = Field(default=None, description="Last 4 digits of account")
     transactions: list[ParsedTransaction] = Field(default_factory=list)
     parsing_notes: Optional[str] = Field(default=None, description="Any notes about parsing issues")
