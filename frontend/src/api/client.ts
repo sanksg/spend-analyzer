@@ -14,11 +14,11 @@ import type {
     TimePatternsResponse,
     CategoryHierarchyResponse,
     MerchantFrequencyResponse,
+    MerchantFrequencyItem,
 } from '../types';
-
 const API_BASE = '/api';
 
-export async function fetchApi<T>(
+async function fetchApi<T>(
     endpoint: string,
     options?: RequestInit
 ): Promise<T> {
@@ -185,6 +185,32 @@ export async function createCategory(data: CategoryCreate): Promise<Category> {
     });
 }
 
+// --- Analytics ---
+
+export async function getDashboardSummary(
+    startDate: string,
+    endDate: string,
+): Promise<SpendSummary> {
+    return fetchApi(`/analytics/summary?start_date=${startDate}&end_date=${endDate}`);
+}
+
+export async function getMerchantStats(
+    startDate: string,
+    endDate: string,
+): Promise<MerchantFrequencyItem[]> {
+    const response = await fetchApi<MerchantFrequencyResponse>(
+        `/analytics/merchant-frequency?start_date=${startDate}&end_date=${endDate}`
+    );
+    return response.merchants;
+}
+
+export async function getCategoryDrilldown(
+    startDate: string,
+    endDate: string,
+): Promise<CategoryHierarchyResponse> {
+    return fetchApi(`/analytics/category-hierarchy?start_date=${startDate}&end_date=${endDate}`);
+}
+
 export async function updateCategory(
     id: number,
     data: Partial<CategoryCreate>
@@ -209,12 +235,11 @@ export interface AnalyticsFilters {
     start_date?: string;
     end_date?: string;
     category_ids?: number[];
-    statement_id?: number;
-    merchant?: string;
 }
 
-export async function getSpendSummary(
-    filters: AnalyticsFilters = {}
+export { fetchApi };
+
+export async function getSpendSummary(filters: AnalyticsFilters = {}
 ): Promise<SpendSummary> {
     const params = new URLSearchParams();
 
@@ -223,8 +248,6 @@ export async function getSpendSummary(
     if (filters.category_ids?.length) {
         params.set('category_ids', filters.category_ids.join(','));
     }
-    if (filters.statement_id !== undefined) params.set('statement_id', String(filters.statement_id));
-    if (filters.merchant) params.set('merchant', filters.merchant);
 
     return fetchApi(`/analytics/summary?${params.toString()}`);
 }
@@ -233,15 +256,8 @@ export async function getTimePatterns(
     filters: AnalyticsFilters = {}
 ): Promise<TimePatternsResponse> {
     const params = new URLSearchParams();
-
     if (filters.start_date) params.set('start_date', filters.start_date);
     if (filters.end_date) params.set('end_date', filters.end_date);
-    if (filters.category_ids?.length) {
-        params.set('category_ids', filters.category_ids.join(','));
-    }
-    if (filters.statement_id !== undefined) params.set('statement_id', String(filters.statement_id));
-    if (filters.merchant) params.set('merchant', filters.merchant);
-
     return fetchApi(`/analytics/time-patterns?${params.toString()}`);
 }
 
@@ -249,15 +265,8 @@ export async function getCategoryHierarchy(
     filters: AnalyticsFilters = {}
 ): Promise<CategoryHierarchyResponse> {
     const params = new URLSearchParams();
-
     if (filters.start_date) params.set('start_date', filters.start_date);
     if (filters.end_date) params.set('end_date', filters.end_date);
-    if (filters.category_ids?.length) {
-        params.set('category_ids', filters.category_ids.join(','));
-    }
-    if (filters.statement_id !== undefined) params.set('statement_id', String(filters.statement_id));
-    if (filters.merchant) params.set('merchant', filters.merchant);
-
     return fetchApi(`/analytics/category-hierarchy?${params.toString()}`);
 }
 
@@ -265,87 +274,7 @@ export async function getMerchantFrequency(
     filters: AnalyticsFilters = {}
 ): Promise<MerchantFrequencyResponse> {
     const params = new URLSearchParams();
-
     if (filters.start_date) params.set('start_date', filters.start_date);
     if (filters.end_date) params.set('end_date', filters.end_date);
-    if (filters.category_ids?.length) {
-        params.set('category_ids', filters.category_ids.join(','));
-    }
-    if (filters.statement_id !== undefined) params.set('statement_id', String(filters.statement_id));
-    if (filters.merchant) params.set('merchant', filters.merchant);
-
     return fetchApi(`/analytics/merchant-frequency?${params.toString()}`);
-}
-
-// --- Phase 2: Subscriptions API ---
-
-export async function detectSubscriptions(minOccurrences: number = 2): Promise<any> {
-    return fetchApi(`/subscriptions/detect?min_occurrences=${minOccurrences}`, {
-        method: 'POST',
-    });
-}
-
-export async function getSubscriptions(activeOnly: boolean = false): Promise<any> {
-    return fetchApi(`/subscriptions/?active_only=${activeOnly}`);
-}
-
-export async function getSubscription(id: number): Promise<any> {
-    return fetchApi(`/subscriptions/${id}`);
-}
-
-export async function updateSubscription(id: number, data: { active?: boolean; user_confirmed?: boolean }): Promise<any> {
-    return fetchApi(`/subscriptions/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-    });
-}
-
-export async function deleteSubscription(id: number): Promise<any> {
-    return fetchApi(`/subscriptions/${id}`, {
-        method: 'DELETE',
-    });
-}
-
-// --- Phase 2: Anomalies API ---
-
-export async function detectAnomalies(zThreshold: number = 2.5, minTransactions: number = 5): Promise<any> {
-    return fetchApi(`/analytics/anomalies/detect?z_threshold=${zThreshold}&min_transactions=${minTransactions}`, {
-        method: 'POST',
-    });
-}
-
-export async function getAnomalies(includeDismissed: boolean = false): Promise<any> {
-    return fetchApi(`/analytics/anomalies?include_dismissed=${includeDismissed}`);
-}
-
-export async function dismissAnomaly(id: number): Promise<any> {
-    return fetchApi(`/analytics/anomalies/${id}/dismiss`, {
-        method: 'POST',
-    });
-}
-
-// --- Phase 2: Financial Health API ---
-
-export async function createOrUpdateProfile(data: {
-    credit_limit?: number | null;
-    apr?: number | null;
-    statement_closing_day?: number | null;
-    min_payment_percent?: number;
-}): Promise<any> {
-    return fetchApi('/financial/profile', {
-        method: 'POST',
-        body: JSON.stringify(data),
-    });
-}
-
-export async function getProfile(): Promise<any> {
-    return fetchApi('/financial/profile');
-}
-
-export async function getCreditHealth(): Promise<any> {
-    return fetchApi('/financial/credit-health');
-}
-
-export async function getInterestCost(): Promise<any> {
-    return fetchApi('/financial/interest-cost');
 }

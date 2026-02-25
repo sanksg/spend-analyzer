@@ -383,14 +383,14 @@ async def get_category_hierarchy(
         if primary_name not in grouped:
             grouped[primary_name] = CategoryDrilldown(
                 primary=primary_name,
-                total_amount=Decimal("0"),
+                total_amount=0.0,
                 transaction_count=0,
                 color=color,
                 detailed=[],
             )
 
         group = grouped[primary_name]
-        group.total_amount += row.total or Decimal("0")
+        group.total_amount += float(row.total or 0)
         group.transaction_count += row.count or 0
 
         group.detailed.append(
@@ -398,7 +398,7 @@ async def get_category_hierarchy(
                 category_id=None,
                 category_name=detailed_name,
                 category_color=color,
-                total_amount=row.total or Decimal("0"),
+                total_amount=float(row.total or 0),
                 transaction_count=row.count or 0,
                 percentage=0,
             )

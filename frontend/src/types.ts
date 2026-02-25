@@ -8,16 +8,11 @@ export interface Statement {
     filename: string;
     file_hash: string;
     file_size: number;
+    issuing_bank: string | null;
     source_name: string | null;
     page_count: number | null;
     period_start: string | null;
     period_end: string | null;
-
-    // New Phase 2 Fields
-    closing_balance: number | null;
-    minimum_payment: number | null;
-    payment_due_date: string | null;
-
     uploaded_at: string;
     transaction_count: number;
     needs_review_count: number;
@@ -46,9 +41,6 @@ export interface Transaction {
     id: number;
     statement_id: number;
     posted_date: string;
-    posted_day_of_week: number | null;
-    posted_month: number | null;
-    posted_year: number | null;
     description: string;
     amount: number;
     currency: string;
@@ -57,8 +49,6 @@ export interface Transaction {
     category_id: number | null;
     category_name: string | null;
     category_color: string | null;
-    category_primary: string | null;
-    category_detailed: string | null;
     confidence: number;
     needs_review: boolean;
     user_edited: boolean;
@@ -66,8 +56,6 @@ export interface Transaction {
     category_source: CategorySource | null;
     raw_text: string | null;
     page_number: number | null;
-    recurring_signature: string | null;
-    recurring_cadence: string | null;
     created_at: string;
 }
 
@@ -94,8 +82,6 @@ export interface Category {
     color: string;
     icon: string | null;
     is_default: boolean;
-    plaid_primary: string | null;
-    plaid_detailed: string | null;
     transaction_count: number;
     total_amount: number;
     created_at: string;
@@ -134,12 +120,6 @@ export interface SpendByDay {
     transaction_count: number;
 }
 
-export interface SpendByDayOfWeek {
-    day_of_week: number;
-    total_amount: number;
-    transaction_count: number;
-}
-
 export interface TopMerchant {
     merchant: string;
     total_amount: number;
@@ -159,6 +139,14 @@ export interface SpendSummary {
     top_merchants: TopMerchant[];
 }
 
+// --- Time Patterns / Hierarchy / Merchant Frequency ---
+
+export interface SpendByDayOfWeek {
+    day_of_week: number;
+    total_amount: number;
+    transaction_count: number;
+}
+
 export interface TimePatternsResponse {
     by_day_of_week: SpendByDayOfWeek[];
 }
@@ -175,7 +163,7 @@ export interface CategoryHierarchyResponse {
     categories: CategoryDrilldown[];
 }
 
-export interface MerchantFrequency {
+export interface MerchantFrequencyItem {
     merchant: string;
     total_amount: number;
     transaction_count: number;
@@ -184,28 +172,196 @@ export interface MerchantFrequency {
 }
 
 export interface MerchantFrequencyResponse {
-    merchants: MerchantFrequency[];
+    merchants: MerchantFrequencyItem[];
 }
 
-
-// --- New Phase 2 Types ---
-
-export interface AppSetting {
-    key: string;
-    value: string;
-    value_type: 'string' | 'int' | 'float' | 'bool';
-}
+// --- Subscriptions ---
 
 export interface Subscription {
     id: number;
-    merchant: string;
+    merchant: string | null;
+    merchant_normalized: string;
     amount: number;
+    currency: string;
     cadence: string;
-    last_seen: string;
+    transaction_count: number;
+    first_seen: string | null;
+    last_seen: string | null;
+    active: boolean;
+    kind: string;
+    category_id: number | null;
+    user_confirmed: boolean;
 }
+
+export interface SubscriptionSummary {
+    subscription_count: number;
+    subscription_monthly: number;
+    emi_count: number;
+    emi_monthly: number;
+    possible_emi_count: number;
+    possible_emi_monthly: number;
+    total_monthly_committed: number;
+}
+
+// --- Settings ---
+
+export interface AppSetting {
+    key: string;
+    value: string | null;
+    value_type: string | null;
+}
+
+// --- Analysis ---
 
 export interface AnalysisResponse {
     answer: string;
     generated_sql: string;
     raw_data: Record<string, any>[];
+}
+
+// --- Budgets ---
+
+export interface Budget {
+    id: number;
+    scope: string;
+    category_id: number | null;
+    category_name: string | null;
+    category_color: string | null;
+    monthly_limit: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface BudgetStatusItem {
+    budget_id: number;
+    scope: string;
+    category_id: number | null;
+    category_name: string | null;
+    category_color: string | null;
+    monthly_limit: number;
+    spent: number;
+    percent: number;
+    thresholds_crossed: number[];
+}
+
+export interface BudgetStatusResponse {
+    month: string;
+    items: BudgetStatusItem[];
+}
+
+// --- Triggers ---
+
+export interface Trigger {
+    type: string;
+    title: string;
+    severity: 'info' | 'warning' | 'alert';
+    reason: string;
+    stats: Record<string, any>;
+    transaction_ids: number[];
+}
+
+// --- Planning ---
+
+export interface UpcomingBill {
+    subscription_id: number;
+    merchant: string;
+    kind: string;
+    cadence: string;
+    amount: number;
+    next_due_date: string;
+    days_until_due: number;
+    reminder_level: 'soon' | 'upcoming' | 'urgent';
+}
+
+export interface UpcomingBillsResponse {
+    window_days: number;
+    total_due: number;
+    items: UpcomingBill[];
+}
+
+export interface CashflowPoint {
+    date: string;
+    projected_outflow: number;
+    projected_balance: number;
+}
+
+export interface CashflowForecastResponse {
+    days: number;
+    starting_cash: number;
+    recurring_commitments: number;
+    variable_daily_average: number;
+    variable_projected: number;
+    total_projected_outflow: number;
+    projected_ending_cash: number;
+    points: CashflowPoint[];
+}
+
+export interface PayoffPlanRequest {
+    current_balance: number;
+    monthly_payment: number;
+    apr_percentage?: number;
+}
+
+export interface PayoffScheduleRow {
+    month: number;
+    date: string;
+    starting_balance: number;
+    interest: number;
+    payment: number;
+    principal: number;
+    ending_balance: number;
+}
+
+export interface PayoffPlanResponse {
+    current_balance: number;
+    monthly_payment: number;
+    apr_percentage: number;
+    months_to_payoff: number | null;
+    total_interest: number | null;
+    total_paid: number | null;
+    payoff_date: string | null;
+    schedule: PayoffScheduleRow[];
+    status: 'ok' | 'payment_too_low' | 'invalid_payment' | 'max_months_exceeded' | 'paid';
+}
+
+export interface SavingsGoal {
+    id: string;
+    name: string;
+    target_amount: number;
+    current_amount: number;
+    target_date: string | null;
+}
+
+export interface SavingsGoalsResponse {
+    goals: SavingsGoal[];
+}
+
+export interface SavingsGoalPayload {
+    id?: string;
+    name: string;
+    target_amount: number;
+    current_amount: number;
+    target_date?: string;
+}
+
+export interface WeeklyAction {
+    kind: string;
+    title: string;
+    detail: string;
+    priority: 'high' | 'medium' | 'low';
+}
+
+export interface WeeklyActionsResponse {
+    actions: WeeklyAction[];
+}
+
+export interface Recommendation {
+    kind: string;
+    title: string;
+    detail: string;
+    potential_savings: number | null;
+}
+
+export interface RecommendationsResponse {
+    recommendations: Recommendation[];
 }

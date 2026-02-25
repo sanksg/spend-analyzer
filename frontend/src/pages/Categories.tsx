@@ -173,7 +173,7 @@ export default function Categories() {
                         </div>
                         <button
                             onClick={handleCreate}
-                            className="btn btn-ghost p-2 text-emerald-600 hover:bg-emerald-100"
+                            className="btn btn-ghost p-2 text-success hover:bg-success/10"
                         >
                             <Check className="w-5 h-5" />
                         </button>
@@ -262,7 +262,7 @@ export default function Categories() {
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => handleUpdate(cat.id)}
-                                                className="btn btn-ghost p-2 text-emerald-600 hover:bg-emerald-100"
+                                                className="btn btn-ghost p-2 text-success hover:bg-success/10"
                                             >
                                                 <Check className="w-4 h-4" />
                                             </button>

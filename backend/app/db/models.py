@@ -61,13 +61,9 @@ class Statement(Base):
 
     # Statement metadata
     source_name = Column(String(100))  # e.g., "Chase", "Amex"
+    issuing_bank = Column(String(100))  # e.g., "HDFC", "ICICI"
     period_start = Column(Date)
     period_end = Column(Date)
-    
-    # Financials (New in Phase 2)
-    closing_balance = Column(Numeric(10, 2), nullable=True)
-    minimum_payment = Column(Numeric(10, 2), nullable=True)
-    payment_due_date = Column(Date, nullable=True)
 
     # Processing info
     page_count = Column(Integer)
@@ -114,16 +110,6 @@ class ParseJob(Base):
         return f"<ParseJob {self.id}: {self.status.value}>"
 
 
-class AppSettings(Base):
-    """User preferences (Singleton/Key-Value storage)."""
-
-    __tablename__ = "settings"
-
-    key = Column(String(50), primary_key=True, index=True)
-    value = Column(String(255), nullable=True)
-    value_type = Column(String(20), default="string")  # string, int, float, bool
-
-
 class Category(Base):
     """Spending category."""
 
@@ -132,12 +118,14 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True)
     description = Column(String(255))
-    plaid_primary = Column(String(100))
-    plaid_detailed = Column(String(150))
     color = Column(String(7), default="#6B7280")  # Hex color
     icon = Column(String(50))  # Icon name
     is_default = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Plaid hierarchy
+    plaid_primary = Column(String(100))
+    plaid_detailed = Column(String(150))
 
     # Relationships
     transactions = relationship("Transaction", back_populates="category")
@@ -158,9 +146,6 @@ class Transaction(Base):
 
     # Transaction data
     posted_date = Column(Date, nullable=False)
-    posted_day_of_week = Column(Integer)
-    posted_month = Column(Integer)
-    posted_year = Column(Integer)
     description = Column(String(500), nullable=False)
     amount = Column(Numeric(12, 2), nullable=False)
     currency = Column(String(3), default="INR")
@@ -177,15 +162,9 @@ class Transaction(Base):
 
     # Category assignment
     category_source = Column(Enum(CategorySource))
-    category_primary = Column(String(100))
-    category_detailed = Column(String(150))
 
     # Deduplication
     dedup_hash = Column(String(64), index=True)  # Hash of date+desc+amount
-
-    # Recurring analysis
-    recurring_signature = Column(String(64), index=True)
-    recurring_cadence = Column(String(20))
 
     # Audit
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -195,6 +174,27 @@ class Transaction(Base):
     raw_text = Column(Text)
     page_number = Column(Integer)
 
+    # Derived date parts (populated on insert)
+    posted_day_of_week = Column(Integer)  # 0=Mon … 6=Sun
+    posted_month = Column(Integer)
+    posted_year = Column(Integer)
+
+    # Denormalized category hierarchy
+    category_primary = Column(String(100))
+    category_detailed = Column(String(150))
+
+    # Recurring / subscription flags
+    recurring_signature = Column(String(64))
+    recurring_cadence = Column(String(20))
+    is_subscription = Column(Boolean, default=False)
+    subscription_id = Column(Integer, ForeignKey("subscriptions.id"), nullable=True)
+
+    # Anomaly flags
+    is_anomaly = Column(Boolean, default=False)
+    anomaly_score = Column(Numeric(5, 2))
+    anomaly_reason = Column(String(255))
+    anomaly_dismissed = Column(Boolean, default=False)
+
     # Relationships
     statement = relationship("Statement", back_populates="transactions")
     category = relationship("Category", back_populates="transactions")
@@ -202,7 +202,6 @@ class Transaction(Base):
     __table_args__ = (
         Index("ix_transactions_posted_date", "posted_date"),
         Index("ix_transactions_category", "category_id"),
-        Index("ix_transactions_posted_year_month", "posted_year", "posted_month"),
     )
 
     def __repr__(self):
@@ -238,33 +237,67 @@ class CategoryRule(Base):
 
 
 class Subscription(Base):
-    """Detected or tracked subscription/recurring payment."""
+    """Detected recurring payment / EMI."""
 
     __tablename__ = "subscriptions"
 
     id = Column(Integer, primary_key=True, index=True)
-    merchant = Column(String(255), nullable=False)
-    merchant_normalized = Column(String(255))
-    amount = Column(Numeric(12, 2))
+    recurring_signature = Column(String(64), nullable=False)
+    merchant_normalized = Column(String(255), nullable=False)
+    amount = Column(Numeric(12, 2), nullable=False)
     currency = Column(String(3), default="INR")
-    cadence = Column(String(50))  # e.g., monthly, yearly
-    kind = Column(String(20))  # e.g., "subscription", "installment"
+    cadence = Column(String(20), nullable=False)  # Monthly, Yearly, etc.
+    transaction_count = Column(Integer, default=0)
     first_seen = Column(Date)
     last_seen = Column(Date)
-    transaction_count = Column(Integer, default=0)
-    category_id = Column(Integer, ForeignKey("categories.id"))
+    average_interval_days = Column(Numeric(6, 2))
+    active = Column(Boolean, default=True)
+    user_confirmed = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    kind = Column(String(20), default="subscription")  # subscription / installment
+    merchant = Column(String(255))  # display name
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
 
+    def __repr__(self):
+        return f"<Subscription {self.id}: {self.merchant} {self.cadence}>"
+
+
+class AppSettings(Base):
+    """Key-value application settings."""
+
+    __tablename__ = "settings"
+
+    key = Column(String(50), primary_key=True)
+    value = Column(String(255))
+    value_type = Column(String(20), default="string")  # string, int, float, json
+
+    def __repr__(self):
+        return f"<AppSettings {self.key}={self.value}>"
+
+
+class Budget(Base):
+    """Monthly spending budget (total or per-category)."""
+
+    __tablename__ = "budgets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    scope = Column(String(20), nullable=False, default="category")  # 'total' or 'category'
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    monthly_limit = Column(Numeric(12, 2), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Relationships
     category = relationship("Category")
 
     __table_args__ = (
-        Index("ix_subscriptions_merchant_norm", "merchant_normalized"),
+        UniqueConstraint("scope", "category_id", name="uq_budget_scope_category"),
     )
 
     def __repr__(self):
-        return f"<Subscription {self.id}: {self.merchant} {self.amount} {self.cadence}>"
+        return f"<Budget {self.id}: {self.scope} limit={self.monthly_limit}>"
+
 
 # Default categories to seed
 DEFAULT_CATEGORIES = [

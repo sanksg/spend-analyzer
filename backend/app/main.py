@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db.session import init_db
-from app.api.routes import statements, transactions, categories, analytics, settings as settings_routes, insights
+from app.api.routes import statements, transactions, categories, analytics, settings as settings_routes, insights, planner
+from app.api.routes import budgets as budgets_routes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,6 +39,8 @@ app.include_router(categories.router, prefix="/api/categories", tags=["categorie
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(settings_routes.router, prefix="/api/settings", tags=["settings"])
 app.include_router(insights.router, prefix="/api/insights", tags=["insights"])
+app.include_router(budgets_routes.router, prefix="/api/budgets", tags=["budgets"])
+app.include_router(planner.router, prefix="/api/planner", tags=["planner"])
 
 
 @app.get("/")

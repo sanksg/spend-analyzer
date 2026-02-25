@@ -39,7 +39,12 @@ def statement_to_response(statement: Statement, db: Session) -> StatementRespons
 
     # Get latest parse status
     # We want the most recent job
-    latest_job = db.query(ParseJob).filter(ParseJob.statement_id == statement.id).order_by(ParseJob.id.desc()).first()
+    latest_job = (
+        db.query(ParseJob)
+        .filter(ParseJob.statement_id == statement.id)
+        .order_by(ParseJob.id.desc())
+        .first()
+    )
     status = latest_job.status if latest_job else ParseStatus.PENDING
 
     return StatementResponse(
@@ -47,6 +52,7 @@ def statement_to_response(statement: Statement, db: Session) -> StatementRespons
         filename=statement.filename,
         file_hash=statement.file_hash,
         file_size=statement.file_size,
+        issuing_bank=statement.issuing_bank,
         file_path=statement.file_path,
         source_name=statement.source_name,
         page_count=statement.page_count,
@@ -95,7 +101,7 @@ async def upload_statement(
             os.remove(saved.file_path)
         except OSError:
             pass
-
+            
         raise HTTPException(
             status_code=409, detail=f"This file has already been uploaded (Statement ID: {existing.id})"
         )
@@ -117,7 +123,7 @@ async def upload_statement(
             pass
         raise HTTPException(status_code=422, detail="INVALID_PASSWORD")
     except Exception as e:
-        # Corrupt or other error?
+         # Corrupt or other error?
         print(f"PDF verification error: {e}")
         # We might want to let it pass and fail in job, OR fail early.
         # Let's fail early for clear corruption

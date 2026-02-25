@@ -115,8 +115,8 @@ export default function UploadPage() {
             {status === 'success' && uploadedStatement ? (
                 <div className="bg-card rounded-xl border border-border p-8 max-w-xl mx-auto shadow-sm">
                     <div className="text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
-                            <CheckCircle className="w-8 h-8 text-emerald-600" />
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/15 mb-4">
+                            <CheckCircle className="w-8 h-8 text-success" />
                         </div>
                         <h2 className="text-xl font-semibold text-foreground mb-2">
                             Upload Successful!
@@ -185,8 +185,8 @@ export default function UploadPage() {
                             </>
                         ) : status === 'password-required' ? (
                             <form onSubmit={submitPassword} className="max-w-xs mx-auto">
-                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
-                                    <Lock className="w-8 h-8 text-amber-600" />
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-warning/15 mb-4">
+                                    <Lock className="w-8 h-8 text-warning" />
                                 </div>
                                 <h3 className="text-lg font-medium text-foreground mb-2">Password Protected</h3>
                                 <p className="text-muted-foreground text-sm mb-4">

@@ -12,6 +12,13 @@ export const getSubscriptions = async (): Promise<Subscription[]> => {
     return fetchApi<Subscription[]>('/insights/subscriptions');
 };
 
+export const updateSubscription = async (id: number, updates: Partial<Subscription>): Promise<Subscription> => {
+    return fetchApi<Subscription>(`/insights/subscriptions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+    });
+};
+
 export const getFees = async (): Promise<any> => {
     return fetchApi('/insights/fees');
 };

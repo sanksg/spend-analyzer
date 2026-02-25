@@ -1,102 +1,40 @@
 # Spend Analyzer
 
-A local-first web app to upload credit card statement PDFs, parse transactions using Google Gemini Flash, categorize spending, and visualize reports.
+Local-first app to upload credit card statement PDFs, parse transactions with Gemini, categorize spend, and view analytics.
 
-## Features
+## Fastest Way to Run (Recommended)
 
-- 📄 Upload credit card statement PDFs
-- 🤖 AI-powered transaction extraction (Gemini Flash)
-- 🗄️ SQLite database for historical data
-- 🏷️ Customizable spending categories
-- 📊 Visual spending reports and dashboards
+Use Docker + one-click scripts.
 
-## Tech Stack
+1. Install Docker Desktop (one-time):
+	- https://www.docker.com/products/docker-desktop/
+2. Create `.env` from `.env.example` and set `GEMINI_API_KEY`.
+3. Start the app:
+	- Windows: `./start.ps1`
+	- macOS: `./start.sh`
 
-- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, SQLite
-- **Frontend**: React 18, Vite, TypeScript, Chart.js
-- **PDF Parsing**: pdfplumber + Google Gemini Flash API
-
-## Project Structure
-
-```
-casparser/
-├── backend/
-│   ├── app/
-│   │   ├── api/           # FastAPI routes
-│   │   ├── db/            # Database models & session
-│   │   ├── parsing/       # PDF extraction & Gemini client
-│   │   ├── jobs/          # Background job runner
-│   │   └── main.py        # FastAPI app entry
-│   ├── data/
-│   │   ├── uploads/       # Uploaded PDF files
-│   │   └── artifacts/     # Extracted text & images
-│   ├── tests/             # pytest tests
-│   ├── alembic/           # DB migrations
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── pages/         # React pages
-│   │   ├── components/    # Reusable components
-│   │   ├── api/           # API client
-│   │   └── App.tsx
-│   └── package.json
-└── README.md
-```
-
-## Setup
-
-### Prerequisites
-
-- Python 3.11+
-- Node.js 18+
-- Google Cloud API key with Gemini API enabled
-
-### Backend Setup
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-
-# Set environment variable for Gemini API
-set GEMINI_API_KEY=your-api-key-here
-
-# Run database migrations
-alembic upgrade head
-
-# Start server
-uvicorn app.main:app --reload --port 8000
-```
-
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-The app will be available at:
+Open:
 - Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
+- Backend: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
-## Usage
+Stop the app:
+- Windows: `./stop.ps1`
+- macOS: `./stop.sh`
 
-1. Open http://localhost:5173
-2. Upload a credit card statement PDF
-3. Review and confirm extracted transactions
-4. Assign categories to transactions
-5. View spending analytics on the dashboard
+## Detailed Step-by-Step Instructions
 
-## Environment Variables
+For dead-simple setup instructions (including Docker installation and troubleshooting), see:
+
+- [INSTRUCTIONS.md](INSTRUCTIONS.md)
+
+## Manual Dev Setup (Optional)
+
+If you prefer local Python/Node setup instead of Docker, see the project guide in [AGENTS.md](AGENTS.md).
+
+## Environment Variable
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `GEMINI_API_KEY` | Google Gemini API key | Yes |
-| `DATABASE_URL` | SQLite path (default: `sqlite:///./data/spend.db`) | No |
+| `GEMINI_API_KEY` | Google Gemini API key for parsing + Ask-Data | Yes |
 
-## License
-
-MIT
